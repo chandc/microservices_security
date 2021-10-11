@@ -1,0 +1,21 @@
+How will you test the changes?
+How will you ensure the changes don't negatively affect your cluster?
+
+There are three environments: development, staging and production. I will test the changes in the development environment first to test out the 
+Kubernetes functionality and performance after hardening. As the hardening can affect the behavior of etcd, master and control plane. 
+I will make sure the addition of certification authority, EventRateLimit and PodSecurityPolicy in the master will not adversely impact 
+the communication with worker nodes. I will also monitor metrics that are available through observability and monitoring techniques using 
+Prometheus and Grafana to make these changes do not degrade performance and generate extraneous loads on the system. 
+Furthermore, these changes should not introduce system errors. We could also roll out these changed incrementally to isolate potential issues and 
+minimize roll back activities as they could be time consuming. 
+
+After having successfully tested these changes in the development environment, I will migrate them to the Staging environment 
+where I can use the canary approach by introducing a small number of changes at a time and apply some simulated traffic to the environment 
+to test the response times which should be within the range of acceptable performance level. The simulated traffic should mimic the production 
+load closely so it is an accurate representation of what the users would experience.
+
+Once the test in the Staging environment is successful, we can take a blue-green deployment approach by supporting 2 production environments. 
+The blue production environment is where the out-of-the box Kubernetes configuration resides while the green environment is where all the hardening 
+changes will take place. To start, we could send a small portion of the production traffic (say 10%) to the green environment and monitor any 
+potential adverse effect, if everything goes well, we can gradually increase the traffic until the traffic to the green environment reaches 100%, 
+when that occurs, the blue environment can become the backup environment or turned off completely.
