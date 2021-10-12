@@ -1,0 +1,45 @@
+Docker Threat Modeling
+Given Docker's system components and the STRIDE framework, identify five potential threats that may arise.
+
+Kubernetes Threat Modeling
+Given Kubernetes' system components and the STRIDE framework, identify five potential threats that may arise.
+
+Docker-bench Run Results and Analysis
+From the failed findings, select and document 3 findings from the Docker-bench results that you want to harden based 
+on the 5 attack surface areas you identified in Step 1. At least 1 of the 3 hardened findings should be different from 
+the ones mentioned in the exercise (i.e. 5.10, 5.14, and 5.22).
+
+
+Five potential Docker threats:
+
+(1)	 Spooling
+•	An attacker may introduce a spooled image in the Docker registry and trick users to using it.
+(2)	 Tampering
+•	The Docker host daemon configuration could be altered by a comprised client to change its behavior.
+(3)	 Elevation of Privilege
+•	Daemon privilege may be escalated if a username is not specified, and the container may run as a root giving access to other containers on the same Docker host. This is also known as an isolation tampering.
+(4)	 Information Disclosure
+•	By default, unrestricted network traffic is enabled between all containers on the same host on the default network bridge. Thus, each container has the potential of reading all packets across the container network on the same host. This might lead to an unintended and unwanted disclosure of information to other containers. 
+(5)	 Denial of service
+•	By default, a container can use all the memory on the host. If the memory consumption for each container is not limited, one container could consume all the memory and deem other containers unusable.
+
+
+Five potential Kubernetes threats:
+
+(1)	Tampering
+•	The configuration of etcd may be tampered with by an attacker, modifying vital system-level configurations such as pod specs. This can be mitigated by restricting permissions on etcd files to 644 or more restrictive and that the pod spec file is set to root ownership.
+(2)	Information Disclosure
+•	Sensitive information may be exposed via the etcd key-value store. This can be mitigated by encrypting etcd content at rest and using TLS to access etcd only from the kube-apiserver. All other traffic should be rejected.
+(3)	Spoofing
+•	Calls to the API server could be spoofed by a malicious caller. This can be mitigated by ensuring all calls to the API server are over TLS, ensuring that anonymous and basic authentication is not used.
+(4)	Repudiation
+•	Unauthorized changes can be made to kubelet. To avoid this, kubelet authentication should be TLS and weak/ basic auth should not be allowed.
+(5)	Denial of Service
+•	Kubelet can be subject to denial of service. To protect the kernel from runtime overruns, set the --protect kernel defaults to true.
+
+Three findings from the Docker-Bench results that I will harden
+
+(2) Fix 1.2.4, 1.2.5, 1.2.6, 1.2.8 and 1.2.9 by turning auditing on.
+The Docker daemon runs with root privileges and its behavior depends on some key files and directories. /var/lib/docker is one such directory, as it holds all the information about containers. To implement this, we can add the line "-w /var/lib/docker -k docker" as to the /etc/audit/audit.rules file.
+(3) Fix 2.17b by setting the --no-new-privileges parameter to true in the /etc/docker/daemon.json file.
+(4) Fix 2.1 by updating the Docker daemon configuration file with the setting "icc": false to restrict inter-container communication.
